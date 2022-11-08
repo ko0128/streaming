@@ -19,6 +19,7 @@ if __name__=='__main__':
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_socket.bind(socket_address)
     print('Socket bind complete')
+    
     #listen() enables a server to accept() connections
     #listen() has a backlog parameter. 
     #It specifies the number of unaccepted connections that the system will allow before refusing new connections.
