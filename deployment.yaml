@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: server
+  template:
+    metadata:
+      labels:
+        app: server
+    spec:
+      containers:
+      - image: ko0128/stream:server
+        name: server
+        ports:
+        - containerPort: 7000
+        volumeMounts:
+        - mountPath: /dev/video0
+          name: dev-video0
+        securityContext:
+          privileged: true
+      volumes:
+        - name: dev-video0
+          hostPath:
+            path: /dev/video0
+      nodeSelector:
+        role: server
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client
+spec:
+  selector:
+    matchLabels:
+      app: client
+  template:
+    metadata:
+      labels:
+        app: client
+    spec:
+      containers:
+      - image: ko0128/stream:client
+        name: client
+        ports:
+        - containerPort: 4000
+      nodeSelector:
+        role: client
+   

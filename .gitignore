@@ -1,0 +1,4 @@
+*mp4
+client/notuse.py
+server/camera.py
+*.dockerignore
