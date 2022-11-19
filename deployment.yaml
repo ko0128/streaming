@@ -49,4 +49,25 @@ spec:
         - containerPort: 4000
       nodeSelector:
         role: client
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: edge
+spec:
+  selector:
+    matchLabels:
+      app: edge
+  template:
+    metadata:
+      labels:
+        app: edge
+    spec:
+      containers:
+      - image: ko0128/stream:edge
+        name: edge
+        ports:
+        - containerPort: 5566
+      nodeSelector:
+        role: edge
    

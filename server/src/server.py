@@ -4,7 +4,36 @@ import cv2
 import pickle
 import struct
 import time
+import threading
+import sys
 #import imutils
+def accept_client(client_socket,addr):
+    while True:
+        if client_socket:
+            #vid = cv2.VideoCapture('/dev/video0')
+            vid = cv2.VideoCapture('rick.mp4')
+            fps = vid.get(cv2.CAP_PROP_FPS)
+            print('video captured')
+            success, frame = vid.read()
+            while success:
+                frame = cv2.resize(frame, (640,360))
+                #print(frame.shape)
+                a = pickle.dumps(frame)
+                message = struct.pack("Q",len(a))+a
+                try:
+                    client_socket.sendall(message)
+                except:
+                    print("Sending Fail")
+                    break
+                #cv2.imshow('Sending...',frame)
+                #print("Sending... ")
+                time.sleep(1/fps)
+                success, frame = vid.read()
+        print(f"Client: {addr} closed")
+        client_socket.close()
+        break
+
+
 if __name__=='__main__':
     # Server socket
     # create an INET, STREAMing socket
@@ -25,38 +54,14 @@ if __name__=='__main__':
     #It specifies the number of unaccepted connections that the system will allow before refusing new connections.
     server_socket.listen(5)
     print('Socket now listening')
-    while True:
-        client_socket,addr = server_socket.accept()
-        print('Connection from:',addr)
-        if client_socket:
-            #vid = cv2.VideoCapture('/dev/video0')
-            vid = cv2.VideoCapture('rick.mp4')
-            fps = vid.get(cv2.CAP_PROP_FPS)
-            print('video captured')
-            #vid = cv2.VideoCapture(0)
-            #print(f'vid.isOpen: {vid.isOpened()}')
-            #while(vid.isOpened()):
-            success, frame = vid.read()
-            while success:
-                #print('vid open')
-                #success, frame = vid.read()
-                #print('vid read')
-                frame = cv2.resize(frame, (640,360))
-                print(frame.shape)
-                a = pickle.dumps(frame)
-                message = struct.pack("Q",len(a))+a
-                #print(len(a))
-                try:
-                    client_socket.sendall(message)
-                except:
-                    print("Sending Fail")
-                    break
-                #cv2.imshow('Sending...',frame)
-                print("Sending... ")
-                time.sleep(1/fps)
-                success, frame = vid.read()
-                #key = cv2.waitKey(10) 
-                #if key ==13:
-                #    client_socket.close()
-
-        client_socket.close()
+    try: 
+        while True:
+            client_socket,addr = server_socket.accept()
+            print('Connection from:',addr)
+            thread = threading.Thread(target=accept_client, args=(client_socket,addr))
+            thread.daemon=True
+            thread.start()
+            print("TOTAL CLIENTS ",threading.activeCount() - 1)
+    except KeyboardInterrupt:
+        print("\nSever stop!")
+        sys.exit()
